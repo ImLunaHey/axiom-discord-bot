@@ -7,5 +7,10 @@
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@axiomhq/axiom-node": "^0.12.0",
+    "chalk": "^5.3.0",
+    "winston": "^3.10.0"
   }
 }
