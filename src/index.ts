@@ -1,29 +1,45 @@
-const createServer = (port: number = Number(process.env.PORT ?? '3000')) => {
-    console.debug('Webserver starting');
+import { Logger } from './logger';
+
+const createWebserver = (logger: Logger, port: number = Number(process.env.PORT ?? '3000')) => {
+    logger.debug('Starting');
     const server = Bun.serve({
         port,
         fetch: () => new Response("Welcome to Bun!"),
     });
-    console.debug('Webserver started', { port });
+    logger.debug('Started', { port });
     return server;
 };
 
-const main = async () => {
-    console.info('Application starting');
-    const server = createServer();
-    console.info('Application started');
+const createDiscordBot = (logger: Logger) => {
+    // TODO: Create discord.js bot
 };
 
-let exited = false;
-['SIGINT', 'SIGKILL'].map(signal => process.on(signal, () => {
-    // Only run once
-    if (exited) return;
-    exited = true;
-    console.info('\nApplication stopping');
-    console.info('Application stopped');
-    process.exit();
-}));
+const logger = new Logger({ service: 'app' });
+const webserverLogger = new Logger({ service: 'web' });
+const discordBotLogger = new Logger({ service: 'bot' });
 
-main().catch(error => {
-    console.error('Application crashed', { cause: error });
-});
+try {
+    // Starting application
+    logger.info('Starting');
+
+    // Create webserver
+    createWebserver(webserverLogger);
+
+    // Create discord bot
+    createDiscordBot(discordBotLogger);
+
+    // Application has started
+    logger.info('Started');
+
+    let exited = false;
+    ['SIGINT', 'SIGKILL', 'SIGTERM'].map(signal => process.on(signal, () => {
+        // Only run once
+        if (exited) return;
+        exited = true;
+        logger.info('\nStopping');
+        logger.info('Stopped');
+        process.exit();
+    }));
+} catch (error: unknown) {
+    logger.error('Crashed', { error });
+}
